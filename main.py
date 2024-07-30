@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import random
 from toio import *
+import keyboard
 
 MAPSIZE = MapSize(34, 339, 35, 250)
 GOAL = Goal(34,84,35,85)
@@ -22,47 +23,58 @@ async def scan_and_connect():
 
     return cube
 
-
 async def loop(toiodo: ToioDo, ax):
     while True:
         if await toiodo.cube.is_in_goal() or await toiodo.cube.is_out_map():
             await toiodo.cube.stop()
             break
-        await toiodo.cube.forward()
-        
-        while True:            
-            current_pos = await toiodo.store_current_pos()
-            if current_pos is None:
-                continue
-            toiodo.savepoint.update_old_pos()
-            
-            
-            
-            plt.plot(current_pos.x, current_pos.y, marker='o', c='r')
-            plt.pause(0.1)
 
-            old_pos = toiodo.savepoint.get_old_pos()
-            await asyncio.sleep(0.1)
+        current_pos = await toiodo.store_current_pos()
+        if current_pos is None:
+                continue     
+    
+        plt.plot(current_pos.x, current_pos.y, marker='o', c='r')
+        user_input=input("input:")
+        plt.pause(0.1)
 
-            if len(old_pos) > 1:
-                if toiodo.savepoint.get_old_pos()[-1] == toiodo.savepoint.get_old_pos()[-2]:
-                    rect2 = patches.Rectangle((current_pos.x, current_pos.y), 8, 8, 
-                                              edgecolor='blue', facecolor='blue', linewidth=2 )
-                    ax.add_patch(rect2)
-                    break
-        
-        await toiodo.cube.backward()
-        if random.randint(1,10) % 2 == 0:
-            await toiodo.cube.turn_right()
-        else:
-            await toiodo.cube.turn_left()
+        if user_input[0] == 'w':
+                await toiodo.cube.forward()
+                await asyncio.sleep(0.1)
+                
+        elif user_input[0] == 'a':
+                await toiodo.cube.turn_left()
+                await asyncio.sleep(0.1)
+                
+        elif user_input[0] == 's':
+                await toiodo.cube.backward()
+                await asyncio.sleep(0.1)
+                
 
-        #await toiodo.update()
-        # await asyncio.sleep(0.08)
-        # print(toiodo.savepoint.get_current_pos())
-        # print(toiodo.savepoint.get_old_pos()[-1])
-        # print(toiodo.savepoint.get_collision_pos())
+        elif user_input[0] == 'd':
+                await toiodo.cube.turn_right()
+                await asyncio.sleep(0.1) 
+                
+        elif user_input[0] == ' ':
+                await toiodo.cube.stop() 
+
+        toiodo.savepoint.update_old_pos()
         
+        
+        old_pos = toiodo.savepoint.get_old_pos()      
+        if len(old_pos) > 1 and toiodo.cube.flag==True:
+            if old_pos[-1] == old_pos[-2]:
+                rect2 = patches.Rectangle((current_pos.x, current_pos.y), 8, 8, 
+                                             edgecolor='blue', facecolor='blue', linewidth=2 )
+                ax.add_patch(rect2)
+                plt.pause(0.1)   
+                if toiodo.cube.w_flag == True:
+                     await toiodo.cube.backward()
+                     await asyncio.sleep(0.1)
+                else:
+                     await toiodo.cube.forward()
+                     await asyncio.sleep(0.1)
+        
+        user_input=[]
 async def point_loop(toiodo: ToioDo, ax):
     while True:
         if await toiodo.cube.is_in_goal() or await toiodo.cube.is_out_map():
