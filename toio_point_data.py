@@ -53,6 +53,8 @@ class MyCube:
         self.cube = cube
         self.map_size = map_size
         self.goal = goal
+        self.flag=False
+        self.w_flag=False
 
     async def current_pos(self):
         data = await self.cube.api.id_information.read()
@@ -70,56 +72,37 @@ class MyCube:
             return None
 
     async def forward(self):
-        await self.cube.api.motor.motor_control(30, 30)
-        # await self.cube.api.motor.motor_control(20, 20)
-        # await asyncio.sleep(0.1)
-        # await self.cube.api.motor.motor_control(0, 0)
+        await self.cube.api.motor.motor_control(10, 10)
+        await asyncio.sleep(1)
+        await self.cube.api.motor.motor_control(0, 0)
+        self.flag=True
+        self.w_flag=True
 
     async def backward(self):
         await self.cube.api.motor.motor_control(-10, -10)
         await asyncio.sleep(1)
         await self.cube.api.motor.motor_control(0, 0)
+        self.flag=True
+        self.w_flag=False
 
     async def turn_right(self):
-        # based_angle = await self.current_angle()
-
-        # target_angle = based_angle + 90
-
-        # while True:
-        #     await self.cube.api.motor.motor_control(-10, 10)
-        #     await asyncio.sleep(0.01)
-        #     current_angle = await self.current_angle()
-        #     if target_angle > 360 :
-        #         current_angle += 360
-        #     if target_angle -10 <= current_angle <= target_angle +10:
-        #         break
- 
         await self.cube.api.motor.motor_control(10, -10)
-        await asyncio.sleep(0.84)
-
+        await asyncio.sleep(0.2)
         await self.cube.api.motor.motor_control(0, 0)
+        self.flag=False
+        self.w_flag=False
     
-    async def turn_left(self):
-        # based_angle = await self.current_angle()
-        # target_angle = based_angle - 90
-
-        # while True:
-        #     await self.cube.api.motor.motor_control(10, -10)
-        #     await asyncio.sleep(0.01)
-        #     current_angle = await self.current_angle()
-        #     if target_angle < 0 :
-        #         current_angle += 360
-        #     if target_angle -10 <= current_angle <= target_angle +10:
-        #         break
-
-
+    async def turn_left(self): 
         await self.cube.api.motor.motor_control(-10, 10)
-        await asyncio.sleep(0.84)
- 
+        await asyncio.sleep(0.2)
         await self.cube.api.motor.motor_control(0, 0)
+        self.flag=False
+        self.w_flag=False
 
     async def stop(self):
         await self.cube.api.motor.motor_control(0, 0)
+        self.flag=False
+        self.w_flag=False
 
     async def is_collision(self):
         pass
@@ -168,5 +151,5 @@ class ToioDo:
         self.savepoint.update_old_pos()
         self.savepoint.update_collision_pos()
         
-    
+
     
